@@ -10,7 +10,7 @@ data "aws_iam_role" "ecr" {
 }
 
 module "ecr" {
-  source                   = "git::https://github.com/bnc-projects/terraform-aws-ecr.git?ref=master"
+  source                   = "git::https://github.com/bnc-projects/terraform-aws-ecr.git?ref=1.0.0"
   allowed_read_principals  = concat("${formatlist("arn:aws:iam::%s:root", var.account_ids)}", ["arn:aws:iam::${var.account_id}:role/TravisCI"])
   allowed_write_principals = ["arn:aws:iam::${var.account_id}:role/TravisCI"]
   ecr_repo_name            = "${var.ecr_repo_name}"
