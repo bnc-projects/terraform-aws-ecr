@@ -1,12 +1,12 @@
 resource "aws_ecr_repository" "default" {
-  name  = "${var.ecr_repo_name}"
-  tags  = "${var.tags}"
+  name = "${var.ecr_repo_name}"
+  tags = "${var.tags}"
 }
 
 resource "aws_ecr_lifecycle_policy" "default" {
   count      = "${var.enable_ecr_lifecycle ? 1 : 0}"
   repository = "${aws_ecr_repository.default.name}"
-  policy = <<EOF
+  policy     = <<EOF
 {
     "rules": [
         {
@@ -24,4 +24,58 @@ resource "aws_ecr_lifecycle_policy" "default" {
     ]
 }
 EOF
+}
+
+data "aws_iam_policy_document" "ecs_ecr_read_perms" {
+  statement {
+    sid    = "ElasticContainerRegistryRead"
+    effect = "Allow"
+
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetAuthorizationToken",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:GetRepositoryPolicy",
+      "ecr:DescribeRepositories",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "ecr:BatchGetImage",
+    ]
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "${var.allowed_read_principals}",
+        "${var.allowed_write_principals}"
+      ]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "ecr_read_and_write_perms" {
+  source_json = "${data.aws_iam_policy_document.ecs_ecr_read_perms.json}"
+  statement {
+    sid    = "ElasticContainerRegistryWrite"
+    effect = "Allow"
+
+    actions = [
+      "ecr:PutImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "${var.allowed_write_principals}"
+      ]
+    }
+  }
+}
+
+resource "aws_ecr_repository_policy" "default" {
+  repository = "${aws_ecr_repository.default.name}"
+  policy     = "${data.aws_iam_policy_document.ecr_read_and_write_perms.json}"
 }
