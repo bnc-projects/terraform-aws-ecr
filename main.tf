@@ -44,10 +44,10 @@ data "aws_iam_policy_document" "ecs_ecr_read_perms" {
     principals {
       type = "AWS"
 
-      identifiers = [
+      identifiers = concat(
         var.allowed_read_principals,
         var.allowed_write_principals
-      ]
+      )
     }
   }
 }
