@@ -22,7 +22,7 @@ variable "enable_ecr_lifecycle" {
 
 variable "image_tag_mutability" {
   description = "Sets if tags for images can be modified once they are created"
-  default     = "IMMUTABLE"
+  default     = "MUTABLE"
   type        = string
 }
 
