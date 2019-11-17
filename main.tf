@@ -1,5 +1,11 @@
 resource "aws_ecr_repository" "default" {
-  name = var.ecr_repo_name
+  name                 = var.ecr_repo_name
+  image_tag_mutability = var.image_tag_mutability
+
+  image_scanning_configuration {
+    scan_on_push = var.scan_on_push
+  }
+
   tags = var.tags
 }
 
@@ -45,8 +51,8 @@ data "aws_iam_policy_document" "ecs_ecr_read_perms" {
       type = "AWS"
 
       identifiers = concat(
-        var.allowed_read_principals,
-        var.allowed_write_principals
+      var.allowed_read_principals,
+      var.allowed_write_principals
       )
     }
   }
